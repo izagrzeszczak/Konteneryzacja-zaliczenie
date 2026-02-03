@@ -1,0 +1,57 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: zaliczenie-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: student
+      POSTGRES_PASSWORD: student123
+      POSTGRES_DB: demo
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    networks:
+      - labnet
+
+  adminer:
+    image: adminer:4
+    container_name: zaliczenie-adminer
+    restart: unless-stopped
+    depends_on:
+      - db
+    ports:
+      - "8081:8080"
+    networks:
+      - labnet
+
+  web:
+    image: nginx:1.27-alpine
+    container_name: zaliczenie-web
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    volumes:
+      - ./nginx/html:/usr/share/nginx/html:ro
+    networks:
+      - labnet
+
+  portainer:
+    image: portainer/portainer-ce:2.20.3
+    container_name: zaliczenie-portainer
+    restart: unless-stopped
+    ports:
+      - "9000:9000"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer_data:/data
+    networks:
+      - labnet
+
+volumes:
+  db_data:
+  portainer_data:
+
+networks:
+  labnet:
+    driver: bridge
